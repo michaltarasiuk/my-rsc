@@ -2,18 +2,34 @@ import { renderToString } from "react-dom/server";
 import { HelloWorld } from "./app/HelloWorld";
 import { createElement } from "react";
 
-Bun.serve({
-  fetch(req) {
-    const url = new URL(req.url);
-    if (url.pathname === "/") {
-      const html = renderToString(createElement(HelloWorld));
-      return new Response(html, {
-        headers: {
-          "Content-Type": "text/html; charset=utf-8",
-        },
-      });
-    }
+const routeResolvers = {
+  "/": (_request: Request) => {
+    const html = renderToString(createElement(HelloWorld));
+    return new Response(html, {
+      headers: {
+        "Content-Type": "text/html; charset=utf-8",
+      },
+    });
+  },
+} satisfies Record<string, (request: Request) => Response>;
 
-    return new Response("404!");
+const routeEntries = Object.entries(routeResolvers);
+
+function resolveRoute(request: Request) {
+  const url = new URL(request.url);
+
+  const routeEntry = routeEntries.find(([path]) => path === url.pathname);
+  if (!routeEntry) {
+    return () => new Response("404!");
+  }
+
+  return routeEntry[1];
+}
+
+Bun.serve({
+  fetch(request) {
+    const route = resolveRoute(request);
+
+    return route(request);
   },
 });
