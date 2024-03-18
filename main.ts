@@ -17,19 +17,16 @@ const routeEntries = Object.entries(routeResolvers);
 
 function resolveRoute(request: Request) {
   const url = new URL(request.url);
-
-  const routeEntry = routeEntries.find(([path]) => path === url.pathname);
-  if (!routeEntry) {
-    return () => new Response("404!");
-  }
-
-  return routeEntry[1];
+  const [, route] = routeEntries.find(([path]) => path === url.pathname) ?? [
+    null,
+    () => new Response("404!"),
+  ];
+  return route;
 }
 
 Bun.serve({
   fetch(request) {
     const route = resolveRoute(request);
-
     return route(request);
   },
 });
