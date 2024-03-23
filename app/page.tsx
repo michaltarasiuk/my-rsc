@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import { getAll } from "../data/db.js";
-import Like from "./like.js";
+// import Like from "./like.js";
 
 export function AlbumsPage() {
   return (
@@ -24,7 +24,7 @@ async function Albums() {
           <div>
             <h3 className="text-xl">{a.title}</h3>
             <p>{a.songs.length} songs</p>
-            <Like />
+            {/* <Like /> */}
           </div>
         </li>
       ))}
