@@ -37,7 +37,6 @@ const clientComponentMap: Record<
 > = {};
 
 const rscResolver: Resolver = async (_request: Request) => {
-  console.log(clientComponentMap);
   const stream = ReactServerDom.renderToReadableStream(<Page />, {});
   return new Response(stream);
 };
@@ -117,7 +116,7 @@ async function bundlePage() {
   if (!clientComponentEntrypoints.size) return;
 
   const { outputs } = await Bun.build({
-    entrypoints: [...clientComponentEntrypoints.values()],
+    entrypoints: Array.from(clientComponentEntrypoints),
     outdir: resolveDist(),
     external: ["react"],
   });
