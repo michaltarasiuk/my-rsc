@@ -2,7 +2,7 @@ import path from "node:path";
 import { renderToString } from "react-dom/server";
 import { HelloWorld } from "./app/HelloWorld";
 
-type Resolver = (request: Request) => Response | Promise<Response>;
+const cwd = process.cwd();
 
 const notFound = () => {
   return new Response("404!", {
@@ -10,15 +10,17 @@ const notFound = () => {
   });
 };
 
+type Resolver = (request: Request) => Response | Promise<Response>;
+
 const staticFileResolver: Resolver = async (request: Request) => {
   const requestURL = new URL(request.url);
-  const filePath = path.join(process.cwd(), requestURL.pathname);
 
+  const filePath = path.join(cwd, requestURL.pathname);
   const file = Bun.file(filePath);
+
   if (await file.exists()) {
     return new Response(file);
   }
-
   return notFound();
 };
 
@@ -39,9 +41,12 @@ const routeEntries = Object.entries(routeResolvers);
 
 function resolveRoute(request: Request) {
   const url = new URL(request.url);
-  const [, route] = routeEntries.find(([path]) =>
+
+  const routeEntry = routeEntries.find(([path]) =>
     new RegExp(path).test(url.pathname)
-  ) ?? [null, () => notFound()];
+  );
+  const [, route] = routeEntry ?? [null, () => notFound()];
+
   return route;
 }
 
