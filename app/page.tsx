@@ -1,8 +1,8 @@
 import { Suspense } from "react";
-import { getAll } from "../data/db.js";
-// import Like from "./like.js";
+import { getAll } from "../data/db";
+import Like from "./like.tsx";
 
-export function AlbumsPage() {
+export function Page() {
   return (
     <>
       <h1 className="text-3xl mb-3">Spotifn’t</h1>
@@ -24,7 +24,7 @@ async function Albums() {
           <div>
             <h3 className="text-xl">{a.title}</h3>
             <p>{a.songs.length} songs</p>
-            {/* <Like /> */}
+            <Like />
           </div>
         </li>
       ))}

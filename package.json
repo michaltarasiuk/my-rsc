@@ -6,9 +6,11 @@
     "start": "bun run --watch server.tsx"
   },
   "dependencies": {
+    "es-module-lexer": "^1.4.2",
     "react": "18.3.0-next-3706edb81-20230308",
     "react-dom": "18.3.0-next-3706edb81-20230308",
-    "react-server-dom-webpack": "0.0.0-experimental-41b4714f1-20230328"
+    "react-server-dom-webpack": "0.0.0-experimental-41b4714f1-20230328",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@types/bun": "latest",
