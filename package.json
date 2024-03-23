@@ -3,16 +3,18 @@
   "module": "main.ts",
   "type": "module",
   "scripts": {
-    "start": "bun run --watch main.tsx"
+    "start": "bun run --watch server.tsx"
   },
   "dependencies": {
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-server-dom-webpack": "0.0.0-experimental-41b4714f1-20230328"
   },
   "devDependencies": {
     "@types/bun": "latest",
     "@types/react": "^18.2.67",
-    "@types/react-dom": "^18.2.22"
+    "@types/react-dom": "^18.2.22",
+    "tailwindcss": "^3.4.1"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
