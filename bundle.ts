@@ -68,7 +68,7 @@ await esbuild.build({
   ],
 });
 
-const { outputFiles = [] } = await esbuild.build({
+const build = await esbuild.build({
   entryPoints: [resolveApp("main.ts"), ...clientComponentEntrypoints.values()],
   outdir: resolveDist(),
   format: "esm",
@@ -77,8 +77,10 @@ const { outputFiles = [] } = await esbuild.build({
   write: false,
 });
 
-const [outputServerFiles, outputClientFiles] = outputFiles.reduce<
-  [Array<esbuild.OutputFile>, Array<esbuild.OutputFile>]
+type OutputFiles = esbuild.OutputFile[];
+
+const [outputFiles, outputClientFiles] = build.outputFiles.reduce<
+  [OutputFiles, OutputFiles]
 >(
   (acc, outputFile) => {
     const index = clientComponentEntrypoints.has(outputFile.path) ? 1 : 0;
@@ -88,7 +90,7 @@ const [outputServerFiles, outputClientFiles] = outputFiles.reduce<
   [[], []]
 );
 
-const writeOutputServerFiles = outputServerFiles.map(
+const writeOutputFiles = outputFiles.map(
   async ({ path, text }) => await Bun.write(path, text)
 );
 
@@ -114,4 +116,4 @@ ${exp.ln}.$$typeof = Symbol.for("react.client.reference");
   await Bun.write(path, newText);
 });
 
-await Promise.all([...writeOutputServerFiles, ...writeOutputClientFiles]);
+await Promise.all([...writeOutputFiles, ...writeOutputClientFiles]);
