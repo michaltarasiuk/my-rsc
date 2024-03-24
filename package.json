@@ -3,6 +3,7 @@
   "module": "main.ts",
   "type": "module",
   "scripts": {
+    "prestart": "bun run bundle.ts",
     "start": "bun run --watch server.tsx"
   },
   "dependencies": {
