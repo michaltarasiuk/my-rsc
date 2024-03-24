@@ -1,3 +1,5 @@
+import { relative } from "node:path";
+import * as esbuild from "esbuild";
 import { parse } from "es-module-lexer";
 import { v4 as uuidv4 } from "uuid";
 
@@ -29,10 +31,12 @@ function toJSExtension(filePath: string) {
 
 const clientComponentEntrypoints = new Map<string, string>();
 
-await Bun.build({
-  entrypoints: [resolveApp("page.tsx")],
+await esbuild.build({
+  entryPoints: [resolveApp("page.tsx")],
   outdir: resolveDist(),
-  external: ["react"],
+  format: "esm",
+  packages: "external",
+  bundle: true,
   plugins: [
     {
       name: "resolve-client-imports",
@@ -64,34 +68,39 @@ await Bun.build({
   ],
 });
 
-const { outputs } = await Bun.build({
-  entrypoints: [resolveApp("main.ts"), ...clientComponentEntrypoints.values()],
+const { outputFiles = [] } = await esbuild.build({
+  entryPoints: [resolveApp("main.ts"), ...clientComponentEntrypoints.values()],
   outdir: resolveDist(),
+  format: "esm",
   splitting: true,
+  bundle: true,
+  write: false,
 });
 
-const clientOutputs = outputs.filter((output) =>
-  clientComponentEntrypoints.has(output.path)
+const [outputServerFiles, outputClientFiles] = outputFiles.reduce<
+  [Array<esbuild.OutputFile>, Array<esbuild.OutputFile>]
+>(
+  (acc, outputFile) => {
+    const index = clientComponentEntrypoints.has(outputFile.path) ? 1 : 0;
+    acc[index].push(outputFile);
+    return acc;
+  },
+  [[], []]
 );
 
-const clientOutputEntries = await Promise.all(
-  clientOutputs.map(async ({ path }) => {
-    const file = Bun.file(path);
-    const fileText = await file.text();
-
-    return [path, fileText] as const;
-  })
+const writeOutputServerFiles = outputServerFiles.map(
+  async ({ path, text }) => await Bun.write(path, text)
 );
 
-for (const [path, fileText] of clientOutputEntries) {
-  const [, exports] = parse(fileText);
+const writeOutputClientFiles = outputClientFiles.map(async ({ path, text }) => {
+  const [, exports] = parse(text);
 
-  let newText = fileText;
+  let newText = text;
   for (const exp of exports) {
     const key = uuidv4();
 
     clientComponentMap[key] = {
-      id: resolveDist(path),
+      id: `/build/${relative(resolveDist(), path)}`,
       name: exp.n,
       chunks: [],
       async: true,
@@ -103,4 +112,6 @@ ${exp.ln}.$$typeof = Symbol.for("react.client.reference");
     `;
   }
   await Bun.write(path, newText);
-}
+});
+
+await Promise.all([...writeOutputServerFiles, ...writeOutputClientFiles]);

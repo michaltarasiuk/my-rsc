@@ -1,6 +1,5 @@
 import path from "node:path";
 import * as ReactServerDom from "react-server-dom-webpack/server.browser";
-import { Page } from "./app/page";
 import { clientComponentMap } from "./bundle";
 
 const cwd = process.cwd();
@@ -26,6 +25,8 @@ const staticFileResolver: Resolver = async (request: Request) => {
 };
 
 const rscResolver: Resolver = async (_request: Request) => {
+  const { Page } = await import("./dist/page");
+
   const stream = ReactServerDom.renderToReadableStream(
     <Page />,
     clientComponentMap
