@@ -22,7 +22,12 @@ function resolveDist(path = "") {
   return Bun.fileURLToPath(new URL(path, distDir));
 }
 
-const clientComponentEntrypoints = new Set<string>();
+const reactComponentExtension = /\.tsx$/;
+function toJSExtension(filePath: string) {
+  return filePath.replace(reactComponentExtension, ".js");
+}
+
+const clientComponentEntrypoints = new Map<string, string>();
 
 await Bun.build({
   entrypoints: [resolveApp("page.tsx")],
@@ -34,7 +39,7 @@ await Bun.build({
       setup(build) {
         build.onResolve(
           {
-            filter: /\.tsx$/,
+            filter: reactComponentExtension,
           },
           async ({ path }) => {
             const filePath = resolveApp(path);
@@ -42,10 +47,13 @@ await Bun.build({
             const fileText = await file.text();
 
             if (fileText.startsWith('"use client"')) {
-              clientComponentEntrypoints.add(filePath);
+              const outputPath = toJSExtension(path);
+
+              const outputFilePath = resolveDist(outputPath);
+              clientComponentEntrypoints.set(outputFilePath, filePath);
 
               return {
-                path: path.replace(/\.tsx$/, ".js"),
+                path: outputPath,
                 external: true,
               };
             }
@@ -57,13 +65,17 @@ await Bun.build({
 });
 
 const { outputs } = await Bun.build({
-  entrypoints: [resolveApp("main.ts"), ...clientComponentEntrypoints],
+  entrypoints: [resolveApp("main.ts"), ...clientComponentEntrypoints.values()],
   outdir: resolveDist(),
   splitting: true,
 });
 
-const outputFiles = await Promise.all(
-  outputs.map(async ({ path }) => {
+const clientOutputs = outputs.filter((output) =>
+  clientComponentEntrypoints.has(output.path)
+);
+
+const clientOutputEntries = await Promise.all(
+  clientOutputs.map(async ({ path }) => {
     const file = Bun.file(path);
     const fileText = await file.text();
 
@@ -71,7 +83,7 @@ const outputFiles = await Promise.all(
   })
 );
 
-for (const [path, fileText] of outputFiles) {
+for (const [path, fileText] of clientOutputEntries) {
   const [, exports] = parse(fileText);
 
   let newText = fileText;
