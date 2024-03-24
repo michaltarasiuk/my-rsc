@@ -100,7 +100,7 @@ const writeOutputClientFiles = outputClientFiles.map(async ({ path, text }) => {
     const key = uuidv4();
 
     clientComponentMap[key] = {
-      id: `/build/${relative(resolveDist(), path)}`,
+      id: `/dist/${relative(resolveDist(), path)}`,
       name: exp.n,
       chunks: [],
       async: true,
