@@ -2,7 +2,13 @@ import { Suspense } from "react";
 import { getAll } from "../data/db";
 import Like from "./like.tsx";
 
-export function Page() {
+type PageProps = {
+  search: string;
+};
+
+export function Page({ search }: PageProps) {
+  console.log(search);
+
   return (
     <>
       <h1 className="text-3xl mb-3">Spotifn’t</h1>

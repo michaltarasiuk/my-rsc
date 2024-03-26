@@ -24,11 +24,12 @@ const staticFileResolver: Resolver = async (request: Request) => {
   return notFound();
 };
 
-const rscResolver: Resolver = async (_request: Request) => {
+const rscResolver: Resolver = async ({ url }: Request) => {
+  const { search } = new URL(url);
   const { Page } = await import("./dist/page");
 
   const stream = ReactServerDom.renderToReadableStream(
-    <Page />,
+    <Page search={search} />,
     clientComponentMap
   );
   return new Response(stream);

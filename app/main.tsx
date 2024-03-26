@@ -1,3 +1,5 @@
+// @ts-expect-error -- not defined in declarations
+import { use } from "react";
 import { createRoot } from "react-dom/client";
 import { createFromFetch } from "react-server-dom-webpack/client";
 
@@ -15,7 +17,15 @@ const rootElement = document.getElementById("root");
 if (!rootElement) throw Error("root element is not defined");
 
 const root = createRoot(rootElement);
+root.render(<Root />);
 
-createFromFetch(fetch("/rsc")).then((comp) => {
-  root.render(comp);
-});
+const cache = new Map<string, ReturnType<typeof createFromFetch>>();
+
+function Root() {
+  const search = window.location.search;
+  if (!cache.has(search)) {
+    cache.set(search, createFromFetch(fetch(`/rsc?${search}`)));
+  }
+
+  return use(cache.get(search));
+}
