@@ -69,7 +69,7 @@ await esbuild.build({
 });
 
 const build = await esbuild.build({
-  entryPoints: [resolveApp("main.tsx"), ...clientComponentEntrypoints.values()],
+  entryPoints: [resolveApp("root.tsx"), ...clientComponentEntrypoints.values()],
   outdir: resolveDist(),
   format: "esm",
   splitting: true,

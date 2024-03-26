@@ -1,6 +1,6 @@
 {
   "name": "simple-rsc-bun",
-  "module": "main.ts",
+  "module": "server.ts",
   "type": "module",
   "scripts": {
     "start": "bun run --watch server.tsx"

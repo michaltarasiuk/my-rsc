@@ -59,4 +59,6 @@ const server = Bun.serve({
   },
 });
 
-console.log(`Listening on ${server.hostname}:${server.port}`);
+console.log(
+  `Listening on http://${server.hostname}:${server.port}/public/root.html`
+);
