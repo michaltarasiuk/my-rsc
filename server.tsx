@@ -1,6 +1,8 @@
 import path from "node:path";
 import * as ReactServerDom from "react-server-dom-webpack/server.browser";
+
 import { clientComponentMap } from "./bundle";
+import { SEARCH_QUERY_KEY } from "./app/consts";
 
 const cwd = process.cwd();
 
@@ -25,11 +27,11 @@ const staticFileResolver: Resolver = async (request: Request) => {
 };
 
 const rscResolver: Resolver = async ({ url }: Request) => {
-  const { searchParams } = new URL(url);
   const { Page } = await import("./dist/page");
+  const { searchParams } = new URL(url);
 
   const stream = ReactServerDom.renderToReadableStream(
-    <Page search={searchParams.get("q") ?? ""} />,
+    <Page search={searchParams.get(SEARCH_QUERY_KEY)} />,
     clientComponentMap
   );
   return new Response(stream);

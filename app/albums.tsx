@@ -2,12 +2,12 @@ import { getAll } from "../data/db";
 import { Like } from "./like.tsx";
 
 type Props = {
-  search: string;
+  search: string | null;
 };
 
 export async function Albums({ search: search_ }: Props) {
   const albums = await getAll();
-  const search = search_.toLowerCase();
+  const search = search_?.toLowerCase();
 
   let searchedAlbums = albums;
   if (search) {
