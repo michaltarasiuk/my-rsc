@@ -50,7 +50,7 @@ await esbuild.build({
             const file = Bun.file(filePath);
             const fileText = await file.text();
 
-            if (fileText.startsWith('"use client"')) {
+            if (/^(["'])use client\1/.test(fileText)) {
               const outputPath = toJSExtension(path);
 
               const outputFilePath = resolveDist(outputPath);
