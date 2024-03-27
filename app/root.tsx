@@ -20,11 +20,15 @@ const root = createRoot(rootElement);
 root.render(<Root />);
 
 const cache = new Map<string, ReturnType<typeof createFromFetch>>();
+const params = new URLSearchParams(document.location.search);
 
 function Root() {
-  const search = window.location.search;
+  const search = params.get("q") ?? "";
   if (!cache.has(search)) {
-    cache.set(search, createFromFetch(fetch(`/rsc?${search}`)));
+    cache.set(
+      search,
+      createFromFetch(fetch(`/rsc?q=${encodeURIComponent(search)}`))
+    );
   }
 
   return use(cache.get(search));

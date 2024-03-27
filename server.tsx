@@ -25,11 +25,11 @@ const staticFileResolver: Resolver = async (request: Request) => {
 };
 
 const rscResolver: Resolver = async ({ url }: Request) => {
-  const { search } = new URL(url);
+  const { searchParams } = new URL(url);
   const { Page } = await import("./dist/page");
 
   const stream = ReactServerDom.renderToReadableStream(
-    <Page search={search} />,
+    <Page search={searchParams.get("q") ?? ""} />,
     clientComponentMap
   );
   return new Response(stream);
