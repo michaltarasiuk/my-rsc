@@ -3,8 +3,6 @@ import { use, cache } from "react";
 import { createRoot } from "react-dom/client";
 import { createFromFetch } from "react-server-dom-webpack/client";
 
-import { useSearch } from "./use_search";
-
 declare global {
   interface Window {
     __webpack_require__: (id: string) => Promise<unknown>;
@@ -23,7 +21,8 @@ const rsc = cache((search: string) => {
   return createFromFetch(fetch(`/rsc` + search));
 });
 
+const search = window.location.search;
+
 function Root() {
-  const search = useSearch();
   return use(rsc(search));
 }

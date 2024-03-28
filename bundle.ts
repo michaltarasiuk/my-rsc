@@ -13,6 +13,8 @@ export const clientComponentMap: Record<
   }
 > = {};
 
+const reactComponentExtension = /\.tsx$/;
+
 const appDir = new URL("./app/", import.meta.url);
 const distDir = new URL("./dist/", import.meta.url);
 
@@ -24,7 +26,6 @@ function resolveDist(path = "") {
   return Bun.fileURLToPath(new URL(path, distDir));
 }
 
-const reactComponentExtension = /\.tsx$/;
 function toJSExtension(filePath: string) {
   return filePath.replace(reactComponentExtension, ".js");
 }

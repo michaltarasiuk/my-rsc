@@ -3,7 +3,7 @@
   "module": "server.ts",
   "type": "module",
   "scripts": {
-    "start": "bun run --watch server.tsx"
+    "start": "bun run server.tsx"
   },
   "dependencies": {
     "es-module-lexer": "^1.4.2",
