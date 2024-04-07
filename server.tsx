@@ -20,13 +20,11 @@ const staticFileResolver: Resolver = async (request: Request) => {
   const filePath = path.join(cwd, requestURL.pathname);
   const file = Bun.file(filePath);
 
-  if (await file.exists()) {
-    return new Response(file);
-  }
+  if (await file.exists()) return new Response(file);
   return notFound();
 };
 
-const rscResolver: Resolver = async ({ url }: Request) => {
+const rscStreamResolver: Resolver = async ({ url }: Request) => {
   const { Page } = await import("./dist/page");
   const { searchParams } = new URL(url);
 
@@ -34,17 +32,59 @@ const rscResolver: Resolver = async ({ url }: Request) => {
     <Page search={searchParams.get(SEARCH_QUERY_KEY)} />,
     clientComponentMap
   );
+
   return new Response(stream);
+};
+
+async function streamToString(stream: ReadableStream<Uint8Array>) {
+  try {
+    const textDecoder = new TextDecoder("utf-8", {
+      fatal: true,
+    });
+
+    let string = "";
+    // @ts-expect-error TypeScript gets this wrong (https://nodejs.org/api/webstreams.html#async-iteration)
+    for await (const chunk of stream) {
+      string += textDecoder.decode(chunk);
+    }
+    return string;
+  } catch {
+    return null;
+  }
+}
+
+const rscStringResolver: Resolver = async ({ url }: Request) => {
+  const { Page } = await import("./dist/page");
+  const { searchParams } = new URL(url);
+
+  const stream = ReactServerDom.renderToReadableStream(
+    <Page search={searchParams.get(SEARCH_QUERY_KEY)} />,
+    clientComponentMap
+  );
+  await stream.allReady;
+
+  const string = await streamToString(stream);
+  return new Response(string, {
+    headers: {
+      "Content-Type": "text/x-component",
+    },
+  });
 };
 
 const routeResolvers = {
   "/public/(.*)": staticFileResolver,
   "/dist/(.*)": staticFileResolver,
-  "/rsc": rscResolver,
+  "/rsc": rscStreamResolver,
+  "/rsc-string": rscStringResolver,
 } satisfies Record<string, (request: Request) => Response | Promise<Response>>;
 
+function addBoundaryAssertion(pattern: string) {
+  return `^${pattern}$`;
+}
+
 const routeEntries = Object.entries(routeResolvers).map(
-  ([path, resolver]) => [new RegExp(path), resolver] as const
+  ([path, resolver]) =>
+    [new RegExp(addBoundaryAssertion(path)), resolver] as const
 );
 
 function resolveRoute(request: Request) {
